@@ -83,14 +83,13 @@ export default function TimeClock() {
   }
 
   async function handleManualEntrySubmit(timeIn, timeOut, date) {
-    await createTimeEntry(timeIn, timeOut, state.type, state.description);
-    setState((prevState) => ({
-      ...prevState,
+    await createTimeEntry(timeIn, timeOut, date, state.type, state.description);
+    setState({
       clockedIn: false,
       type: "",
       description: "",
       timeIn: "",
-    }));
+    });
   }
 
   return (

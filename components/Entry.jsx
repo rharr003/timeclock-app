@@ -1,31 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-
-// Helper function to format date and time to AM/PM format
-function formatDateTime(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleString("en-US", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-}
-
-function reformatDateWithDay(dateString) {
-  // Create a Date object in local time from the input string
-  const [year, month, day] = dateString.split("/");
-  const date = new Date(year, month - 1, day); // month - 1 because months are 0-indexed
-
-  // Get day of the week and format month/day
-  const options = { weekday: "long" }; // e.g., "Monday"
-  const dayOfWeek = date.toLocaleDateString("en-US", options);
-  const formattedDate = `${month}/${day}`;
-
-  // Combine day of the week with formatted date
-  return `${dayOfWeek} ${formattedDate}`;
-}
-
-export default function Entry({ entry }) {
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { reformatDateWithDay, formatDateTime } from "../util/helpers";
+import EditEntryModal from "./EditEntryModal";
+import { useState } from "react";
+export default function Entry({ entry, handleDelete, handleEdit }) {
+  const [showModal, setShowModal] = useState(false);
+  function showDeleteInstructions() {
+    Alert.alert("Confirm Deletion", "Are you sure you want to delete", [
+      { text: "Confirm", onPress: () => handleDelete(entry.id) },
+      { text: "Cancel", onPress: () => {} },
+    ]),
+      { cancelable: true };
+  }
   return (
     <View style={styles.entryContainer}>
       {/* Entry Date and Time */}
@@ -46,13 +32,31 @@ export default function Entry({ entry }) {
 
       {/* Edit and Delete Buttons */}
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.editButton} onPress={() => {}}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.editButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => setShowModal(true)}
+        >
           <Text style={styles.buttonText}>Edit</Text>
         </Pressable>
-        <Pressable style={styles.deleteButton} onPress={() => {}}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.deleteButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={showDeleteInstructions}
+        >
           <Text style={styles.buttonText}>Delete</Text>
         </Pressable>
       </View>
+      <EditEntryModal
+        visible={showModal}
+        entry={entry}
+        handleClose={() => setShowModal(false)}
+        handleEdit={handleEdit}
+      />
     </View>
   );
 }
@@ -114,5 +118,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

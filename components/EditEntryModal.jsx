@@ -7,38 +7,39 @@ import {
   Dimensions,
   Text,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { updateTimeEntry } from "../db";
 
-export default function ManualEntryModal({
+export default function EditEntryModal({
   visible,
   handleClose,
-  handleManualEntrySubmit,
+  entry,
+  handleEdit,
 }) {
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
-  const [date, setDate] = useState(new Date());
-
-  const handleConfirm = async () => {
+  // Convert ISO strings to Date objects for local time editing
+  const [date, setDate] = useState(new Date(entry.start));
+  const [startTime, setStartTime] = useState(new Date(entry.start));
+  const [endTime, setEndTime] = useState(new Date(entry.end));
+  const [description, setDescription] = useState(entry.description);
+  async function handleSave() {
     const datePrefix = date.toISOString().split("T")[0] + "T";
     //update date prefix for start and end as they wont be correct if the user changed the date since they always intialize to the current date
     const start = datePrefix + startTime.toTimeString().split(" ")[0];
     const end = datePrefix + endTime.toTimeString().split(" ")[0];
     const localDate = date.toLocaleDateString("en-CA").replace(/-/g, "/");
-
-    await handleManualEntrySubmit(start, end, localDate);
+    await handleEdit(entry.id, start, end, localDate, description);
     handleClose();
-    // console.log(start);
-    // console.log(end);
-    // console.log(localDate);
-  };
-
+  }
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
-      <Pressable style={styles.flex1}>
+      <Pressable style={styles.flex1} onPress={() => {}}>
         <View style={styles.centeredView}>
           <Pressable style={styles.container}>
-            <Text style={styles.header}>Manual Time Entry</Text>
+            <Text style={styles.header}>Edit Time Clock Entry</Text>
+
+            {/* Date Picker */}
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>Select Date</Text>
               <DateTimePicker
@@ -51,6 +52,8 @@ export default function ManualEntryModal({
                 style={styles.picker}
               />
             </View>
+
+            {/* Start Time Picker */}
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>Start Time</Text>
               <DateTimePicker
@@ -64,6 +67,8 @@ export default function ManualEntryModal({
                 style={styles.picker}
               />
             </View>
+
+            {/* End Time Picker */}
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>End Time</Text>
               <DateTimePicker
@@ -77,12 +82,26 @@ export default function ManualEntryModal({
                 style={styles.picker}
               />
             </View>
+
+            {/* Description Input */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={styles.input}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Enter description"
+                multiline
+              />
+            </View>
+
+            {/* Confirm and Cancel Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.confirmButton}
-                onPress={handleConfirm}
+                onPress={handleSave}
               >
-                <Text style={styles.confirmButtonText}>Submit</Text>
+                <Text style={styles.confirmButtonText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -102,12 +121,11 @@ const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     width: Math.min(width, 350),
-    height: Math.min(height, 375),
     backgroundColor: "#e0e0e0",
     borderRadius: 25,
-    alignItems: "center",
     padding: 20,
     justifyContent: "center",
+    alignItems: "center",
   },
   centeredView: {
     justifyContent: "center",
@@ -127,39 +145,54 @@ const styles = StyleSheet.create({
     width: "100%",
     marginVertical: 10,
     alignItems: "center",
-    justifyContent: "space-between",
     flexDirection: "row",
+    justifyContent: "space-between",
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
   },
   picker: {
-    width: 200,
-    color: "blue",
+    flex: 1,
+  },
+  inputContainer: {
+    width: "100%",
+    marginVertical: 10,
+  },
+  input: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    height: 40,
+    width: "100%",
+    backgroundColor: "#fff",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
   confirmButton: {
     backgroundColor: "#007bff",
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  confirmButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    width: "70%",
-    justifyContent: "space-between",
+    flex: 1,
+    marginRight: 10,
   },
   cancelButton: {
     backgroundColor: "#FF4C4C",
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    marginTop: 20,
+    flex: 1,
+    marginLeft: 10,
+  },
+  confirmButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

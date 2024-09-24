@@ -1,49 +1,12 @@
 import RNPickerSelect from "react-native-picker-select";
-import { View, Text, StyleSheet, Platform, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useState, useEffect } from "react";
 import GroupSelectorModal from "./GroupSelectorModal";
-
-const pickerStyle = {
-  modalViewBottom: {
-    backgroundColor: "#bdbdbd",
-  },
-  modalViewMiddle: {
-    borderTopWidth: 0,
-    backgroundColor: "#bdbdbd",
-  },
-  done: {
-    color: "black",
-  },
-  chevron: {
-    display: "none",
-  },
-};
-
-export const locationOptions = [
-  "Great Bridge",
-  "Greenbrier",
-  "Mt. Trashmore",
-  "Princess Anne",
-].map((val) => ({
-  label: val,
-  color: Platform.OS === "ios" ? "#000000" : "#000000",
-  value: val,
-}));
-
-const groupsObject = {
-  Novice: false,
-  "Dev. Silver": false,
-  "Dev. Gold": false,
-  "AG Bronze": false,
-  "AG Silver": false,
-  "AG Gold": false,
-  "Senior Bronze": false,
-  "Senior Silver": false,
-  "Senior Gold": false,
-  "Pre-Nat": false,
-  National: false,
-  Multiple: false,
-};
+import {
+  pickerStyle,
+  locationOptions,
+  groupsObject,
+} from "../../util/constants";
 
 export default function LocationGroupPicker({ handleChange }) {
   const [location, setLocation] = useState("");

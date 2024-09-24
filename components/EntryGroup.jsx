@@ -1,37 +1,16 @@
 import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
 import { useState } from "react";
 import Entry from "./Entry";
+import { calculateTotalHours } from "../util/helpers";
+import { globalStyles } from "../util/globalStyles";
+import { generatePDF } from "../util/pdf";
 
-function calculateTotalHours(entries) {
-  let totalMinutes = 0;
-
-  entries.forEach((entry) => {
-    const startTime = new Date(entry.start);
-    const endTime = new Date(entry.end);
-
-    // Calculate the difference in milliseconds
-    const differenceInMilliseconds = endTime - startTime;
-    const minutes = differenceInMilliseconds / (1000 * 60); // Convert milliseconds to minutes
-
-    // Add to the total minutes
-    totalMinutes += minutes;
-  });
-
-  // Convert total minutes to hours
-  const totalHours = totalMinutes / 60;
-
-  // Round up to the nearest hundredth of an hour
-  const roundedTotalHours = Math.ceil(totalHours * 100) / 100;
-
-  return roundedTotalHours.toFixed(2);
-}
-export default function EntryGroup({ group }) {
+export default function EntryGroup({ group, handleDelete, handleEdit }) {
   const [collapsed, setCollapsed] = useState(true);
-  const [total, setTotal] = useState(calculateTotalHours(group.entries));
+  const total = calculateTotalHours(group.entries);
 
   return (
     <View style={styles.container}>
-      {/* Header with Date Range and PDF Button */}
       <View style={styles.header}>
         <View>
           <Text style={styles.dateRange}>{group.dateRange}</Text>
@@ -40,11 +19,20 @@ export default function EntryGroup({ group }) {
           </Text>
         </View>
         <View>
-          <Pressable style={styles.pdfButton} onPress={() => {}}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.pdfButton,
+              pressed && globalStyles.pressed,
+            ]}
+            onPress={() => generatePDF(group, total)}
+          >
             <Text style={styles.pdfButtonText}>Generate PDF</Text>
           </Pressable>
           <Pressable
-            style={styles.toggleButton}
+            style={({ pressed }) => [
+              styles.toggleButton,
+              pressed && globalStyles.pressed,
+            ]}
             onPress={() => setCollapsed((prevState) => !prevState)}
           >
             <Text style={styles.toggleButtonText}>
@@ -53,11 +41,16 @@ export default function EntryGroup({ group }) {
           </Pressable>
         </View>
       </View>
-
       {!collapsed && (
         <FlatList
           data={group.entries}
-          renderItem={({ item }) => <Entry entry={item} />}
+          renderItem={({ item }) => (
+            <Entry
+              entry={item}
+              handleDelete={handleDelete}
+              handleEdit={handleEdit}
+            />
+          )}
           keyExtractor={(item, index) => index.toString()} // Unique key for each entry
           contentContainerStyle={styles.entryList}
         />

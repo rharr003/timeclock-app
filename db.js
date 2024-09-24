@@ -1,4 +1,5 @@
 import * as SQLite from "expo-sqlite";
+import { getDateRangeLabel } from "./util/helpers";
 
 const db = SQLite.openDatabaseSync("tide.db");
 
@@ -20,14 +21,14 @@ export const wipe = async () => {
   console.log("db wiped");
 };
 
-export const updateTimeEntryField = (id, field, value) => {
-  const query = `UPDATE time_entries SET ${field} = ? WHERE id = ?`;
-  db.runAsync(query, value, id);
+export const updateTimeEntry = async (id, start, end, date, description) => {
+  const query = `UPDATE time_entries SET start=?, end=?, date=?, description = ? WHERE id = ?`;
+  await db.runAsync(query, start, end, date, description, id);
 };
 
-export const deleteTimeEntry = (id) => {
+export const deleteTimeEntry = async (id) => {
   const query = `DELETE FROM time_entries WHERE id = ?`;
-  db.runAsync(query, id);
+  await db.runAsync(query, id);
 };
 
 export const createTimeEntry = async (start, end, date, type, description) => {
@@ -39,24 +40,6 @@ export const fetchTimeEntries = async (startDate) => {
   // Construct the query to fetch entries from the given start date up to now
   const query = `SELECT * FROM time_entries WHERE date >= ? ORDER BY date ASC`;
   const entries = await db.getAllAsync(query, startDate);
-
-  // Helper function to generate a date range label
-  const getDateRangeLabel = (isoDateString) => {
-    const date = new Date(isoDateString);
-    const day = date.getDate();
-    const month = date.toLocaleString("default", { month: "short" }); // e.g., 'Jan'
-    const year = date.getFullYear();
-
-    if (day <= 15) {
-      return `${month} 1-15, ${year}`;
-    } else {
-      return `${month} 16-${new Date(
-        year,
-        date.getMonth() + 1,
-        0
-      ).getDate()}, ${year}`;
-    }
-  };
 
   // Object to hold grouped entries
   const groupedEntries = {};

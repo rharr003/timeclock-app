@@ -32,6 +32,7 @@ export default function TypePicker({ handleChange, type }) {
         onValueChange={handleChange}
         items={options}
         style={pickerStyle}
+        value={type}
       >
         <View style={styles.buttonStyle}>
           <Text style={styles.buttonTextStyle}>
